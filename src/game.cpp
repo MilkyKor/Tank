@@ -28,6 +28,9 @@ Vec2 Game::get_projectile_pos() {
 
     // Elõzõ pozíció elmentése az interpolációhoz (ha késõbb finomítani akarjuk)
     Vec2 prev_pos = projectile_pos;
+    // légellenállás
+    velocity.x *= 0.99;
+    velocity.y *= 0.99;
 
     // Mozgás frissítése
     projectile_pos.x += velocity.x + wind;
@@ -94,3 +97,8 @@ Player* Game::get_player(int i)
     return &players[i];
 }
 
+int Game::get_loser() {
+    if (players[0].get_hp() <= 0) return 0;
+    if (players[1].get_hp() <= 0) return 1;
+    return -1;
+}

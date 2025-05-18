@@ -18,6 +18,7 @@ public:
     int get_current_index() const;
     float get_wind() const { return wind; }
     Player* get_player(int i);
+    int get_loser();
 
 private:
     Player players[2];

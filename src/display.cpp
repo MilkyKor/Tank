@@ -10,6 +10,27 @@ Display::Display(App* parent, int x, int y, int sx, int sy, Game* g)
     : Widget(parent, x, y, sx, sy), game(g) {}
 
 void Display::draw() {
+
+    if (game_state == State::StartMenu) {
+        gout << color(200, 200, 200) << move_to(0, 0) << box(_size_x, _size_y)
+             << color(0, 0, 0)
+             << move_to(250, 250) << text("Tank Battle")
+             << move_to(180, 350) << text("Press SPACE to start");
+        return;
+    }
+
+    if (game_state == State::Victory) {
+        int loser = game->get_loser();
+        std::string winner = (loser == 0) ? "Player 2" : "Player 1";
+
+        gout << color(255, 255, 255) << move_to(0, 0) << box(_size_x, _size_y)
+             << color(0, 0, 0)
+             << move_to(200, 250) << text(winner + " wins!")
+             << move_to(150, 350) << text("Press R to restart")
+             << move_to(150, 400) << text("Press ESC to quit");
+        return;
+    }
+
     gout << move_to(_x, _y) << color(150, 200, 150) << box(_size_x, _size_y);
 
     Player* current = game->get_current_player();
@@ -100,6 +121,28 @@ void Display::draw() {
 }
 
 void Display::handle(event ev) {
+    // START MENÜ
+    if (game_state == State::StartMenu) {
+        if (ev.type == ev_key && ev.keycode == ' ') {
+            game_state = State::Playing;
+        }
+        return;
+    }
+
+    // VICTORY
+    if (game_state == State::Victory) {
+    if (ev.type == ev_key) {
+        if (ev.keycode == key_escape) {
+            exit(0);
+        }
+        if (ev.keycode == 'r') {
+            *game = Game();
+            game_state = State::StartMenu;
+        }
+    }
+    return;
+}
+
     if (ev.type == ev_key && !game->projectile_active()) {
         Player* player = game->get_current_player();
 
@@ -133,6 +176,10 @@ void Display::handle(event ev) {
     }
     if (projectile_was_active && !game->projectile_active()) {
         game->next_turn();
+    }
+
+    if (game->get_loser() != -1) {
+        game_state = State::Victory;
     }
 
     // Frissítsd az előző állapotot
