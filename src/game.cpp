@@ -18,26 +18,53 @@ Player* Game::get_other_player() {
 void Game::shoot() {
     Player* p = get_current_player();
     float rad = p->get_angle() * 3.14 / 180;
-    velocity = { p->get_power() * std::cos(rad), -p->get_power() * std::sin(rad) };
-    projectile_pos = p->get_barrel_exit();
+    Vec2 base_velocity = { p->get_power() * std::cos(rad), -p->get_power() * std::sin(rad) };
+    Vec2 start_pos = p->get_barrel_exit();
+
     active = true;
+
+    switch (current_projectile) {
+        case ProjectileType::Normal:
+            velocity = base_velocity;
+            projectile_pos = start_pos;
+            break;
+
+        case ProjectileType::Spread:
+            // Három irány, eltérített szög
+            // Itt csak a középsőt lőjük ki látványosan, a többi dummy
+            // De több lövedék támogatásához tömb kellene (további fejlesztés)
+            velocity = base_velocity;
+            projectile_pos = start_pos;
+            // TODO: több lövedék
+            break;
+
+        case ProjectileType::Big:
+            velocity = base_velocity;
+            projectile_pos = start_pos;
+            break;
+
+        case ProjectileType::Homing:
+            velocity = base_velocity;
+            projectile_pos = start_pos;
+            break;
+    }
 }
 
 Vec2 Game::get_projectile_pos() {
     if (!active) return {-1, -1};
 
-    // El�z� poz�ci� elment�se az interpol�ci�hoz (ha k�s�bb finom�tani akarjuk)
+    // Elõzõ pozíció elmentése az interpolációhoz (ha késõbb finomítani akarjuk)
     Vec2 prev_pos = projectile_pos;
-    // l�gellen�ll�s
+    // légellenállás
     velocity.x *= 0.99;
     velocity.y *= 0.99;
 
-    // Mozg�s friss�t�se
+    // Mozgás frissítése
     projectile_pos.x += velocity.x + wind;
     projectile_pos.y += velocity.y;
     velocity.y += gravity;
 
-    // �tk�z�s vizsg�lat - ha eltal�lja az ellenfelet
+    // Ütközés vizsgálat - ha eltalálja az ellenfelet
     Vec2 opp_pos = get_other_player()->get_position();
 
     // hit box
@@ -45,13 +72,39 @@ Vec2 Game::get_projectile_pos() {
     bool hit_y = projectile_pos.y >= opp_pos.y && projectile_pos.y <= opp_pos.y + 20;
 
     if (hit_x && hit_y) {
-    get_other_player()->take_damage(20);
+        int dmg = 20;
+        switch (current_projectile) {
+            case ProjectileType::Spread:
+                dmg = 10;
+                break;
+            case ProjectileType::Big:
+                dmg = 15;
+                break;
+            case ProjectileType::Homing:
+                dmg = 8;
+                break;
+            case ProjectileType::Normal:
+                default: dmg = 20;
+                break;
+        }
+    get_other_player()->take_damage(dmg);
     active = false;
 }
 
-    // Talajba csap�d�s
+    // Talajba csapódás
     if (projectile_pos.y > 580) {
         active = false;
+    }
+
+    if (current_projectile == ProjectileType::Homing) {
+        Vec2 target = get_other_player()->get_position();
+        float dx = target.x - projectile_pos.x;
+        float dy = target.y - projectile_pos.y;
+        float dist = std::sqrt(dx*dx + dy*dy);
+        if (dist > 0.1f) {
+            velocity.x += dx / dist * 0.5;
+            velocity.y += dy / dist * 0.5;
+        }
     }
 
     return projectile_pos;

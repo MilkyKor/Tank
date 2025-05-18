@@ -52,7 +52,7 @@ void Display::draw() {
              << move_to(10, 80)
              << text("Wind: ") << text(std::to_string(int(game->get_wind())));
 
-    // FÃ¶ld
+    // Föld
     gout << color(50, 100, 50) << move_to(0, _y + _size_y - 20) << box(_size_x, 20);
 
     // Tank
@@ -86,17 +86,34 @@ void Display::draw() {
          << line_to(x3, y3) << line_to(x4, y4)
          << line_to(x1, y1);
     }
-    // LÃ¶vedÃ©k
+    // Lövedék
     if (game->projectile_active()) {
     Vec2 proj = game->get_projectile_pos();
-    gout << color(255, 0, 0)
-         << move_to(proj.x, proj.y)
-         << box(4, 4);
+    switch (game->get_projectile_type()) {
+        case ProjectileType::Big:
+            gout << color(200, 0, 200)
+                 << move_to(proj.x - 4, proj.y - 4)
+                 << box(12, 12);
+            break;
+        case ProjectileType::Spread:
+            gout << color(255, 150, 0)
+                 << move_to(proj.x, proj.y)
+                 << box(4, 4);
+            break;
+        case ProjectileType::Homing:
+            gout << color(0, 200, 200)
+                 << move_to(proj.x, proj.y)
+                 << box(4, 4);
+            break;
+        default:
+            gout << color(255, 0, 0)
+                 << move_to(proj.x, proj.y)
+                 << box(4, 4);
+            break;
     }
+}
 
-
-
-    // irÃ¡ny
+    // irány
     std::vector<Vec2> preview = game->get_trajectory_preview();
 
     for (const Vec2& p : preview) {
@@ -111,17 +128,25 @@ void Display::draw() {
     gout << color(0, 0, 0) << move_to(100, 60 + i * 20) << text(label);
     }
 
-    // Debug hitbox kirajzolÃ¡s
-    gout << color(255, 0, 255);  // Lila szÃ­n, jÃ³l lÃ¡thatÃ³
+    // Debug hitbox kirajzolás
+    gout << color(255, 0, 255);  // Lila szín, jól látható
     for (int i = 0; i < 2; ++i) {
         Player* p = game->get_player(i);
         Vec2 pos = p->get_position();
         gout << move_to(pos.x, pos.y ) << box(50, 25);
     }
+    std::string type_str;
+    switch (game->get_projectile_type()) {
+        case ProjectileType::Normal: type_str = "Normal"; break;
+        case ProjectileType::Spread: type_str = "Spread"; break;
+        case ProjectileType::Big: type_str = "Big"; break;
+        case ProjectileType::Homing: type_str = "Homing"; break;
+    }
+    gout << move_to(10, 100) << text("Projectile: " + type_str);
 }
 
 void Display::handle(event ev) {
-    // START MENÃœ
+    // START MENÜ
     if (game_state == State::StartMenu) {
         if (ev.type == ev_key && ev.keycode == ' ') {
             game_state = State::Playing;
@@ -168,9 +193,18 @@ void Display::handle(event ev) {
             case ' ':
                 game->shoot();
                 break;
-            case 'm':
-                player->take_damage(50);
+            case '1':
+                game->set_projectile_type(ProjectileType::Normal);
                 break;
+            case '2':
+                game->set_projectile_type(ProjectileType::Spread);
+                break;
+            case '3':
+                game->set_projectile_type(ProjectileType::Big);
+                break;
+            case '4':
+                game->set_projectile_type(ProjectileType::Homing);
+            break;
         }
 
     }
@@ -182,6 +216,6 @@ void Display::handle(event ev) {
         game_state = State::Victory;
     }
 
-    // FrissÃ­tsd az elÅ‘zÅ‘ Ã¡llapotot
+    // Frissítsd az elõzõ állapotot
     projectile_was_active = game->projectile_active();
 }
