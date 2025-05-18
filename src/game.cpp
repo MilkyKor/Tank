@@ -30,12 +30,8 @@ void Game::shoot() {
             break;
 
         case ProjectileType::Spread:
-            // Három irány, eltérített szög
-            // Itt csak a középsőt lőjük ki látványosan, a többi dummy
-            // De több lövedék támogatásához tömb kellene (további fejlesztés)
             velocity = base_velocity;
             projectile_pos = start_pos;
-            // TODO: több lövedék
             break;
 
         case ProjectileType::Big:
@@ -68,25 +64,36 @@ Vec2 Game::get_projectile_pos() {
     Vec2 opp_pos = get_other_player()->get_position();
 
     // hit box
-    bool hit_x = projectile_pos.x >= opp_pos.x  && projectile_pos.x <= opp_pos.x + 50;
-    bool hit_y = projectile_pos.y >= opp_pos.y && projectile_pos.y <= opp_pos.y + 20;
+    float proj_width = 4;  // alapértelmezett
+    float proj_height = 4;
 
-    if (hit_x && hit_y) {
-        int dmg = 20;
-        switch (current_projectile) {
-            case ProjectileType::Spread:
-                dmg = 10;
-                break;
-            case ProjectileType::Big:
-                dmg = 15;
-                break;
-            case ProjectileType::Homing:
-                dmg = 8;
-                break;
-            case ProjectileType::Normal:
-                default: dmg = 20;
-                break;
-        }
+    switch (current_projectile) {
+        case ProjectileType::Spread:
+            proj_width = 6;
+            proj_height = 50;
+            break;
+        case ProjectileType::Big:
+            proj_width = 12;
+            proj_height = 12;
+            break;
+        default:
+            break;
+}
+
+// hitbox a lövedék mérete alapján
+bool hit_x = projectile_pos.x + proj_width/2 >= opp_pos.x &&
+             projectile_pos.x - proj_width/2 <= opp_pos.x + 50;
+bool hit_y = projectile_pos.y + proj_height/2 >= opp_pos.y &&
+             projectile_pos.y - proj_height/2 <= opp_pos.y + 25;
+
+if (hit_x && hit_y) {
+    int dmg = 20;
+    switch (current_projectile) {
+        case ProjectileType::Spread: dmg = 10; break;
+        case ProjectileType::Big: dmg = 15; break;
+        case ProjectileType::Homing: dmg = 8; break;
+        default: break;
+    }
     get_other_player()->take_damage(dmg);
     active = false;
 }

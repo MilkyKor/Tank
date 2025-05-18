@@ -52,7 +52,7 @@ void Display::draw() {
              << move_to(10, 80)
              << text("Wind: ") << text(std::to_string(int(game->get_wind())));
 
-    // Föld
+    // FÃ¶ld
     gout << color(50, 100, 50) << move_to(0, _y + _size_y - 20) << box(_size_x, 20);
 
     // Tank
@@ -86,7 +86,7 @@ void Display::draw() {
          << line_to(x3, y3) << line_to(x4, y4)
          << line_to(x1, y1);
     }
-    // Lövedék
+    // LÃ¶vedÃ©k
     if (game->projectile_active()) {
     Vec2 proj = game->get_projectile_pos();
     switch (game->get_projectile_type()) {
@@ -97,8 +97,8 @@ void Display::draw() {
             break;
         case ProjectileType::Spread:
             gout << color(255, 150, 0)
-                 << move_to(proj.x, proj.y)
-                 << box(4, 4);
+                 << move_to(proj.x - 6, proj.y - 2)
+                 << box(6, 32);
             break;
         case ProjectileType::Homing:
             gout << color(0, 200, 200)
@@ -113,7 +113,7 @@ void Display::draw() {
     }
 }
 
-    // irány
+    // irÃ¡ny
     std::vector<Vec2> preview = game->get_trajectory_preview();
 
     for (const Vec2& p : preview) {
@@ -128,8 +128,8 @@ void Display::draw() {
     gout << color(0, 0, 0) << move_to(100, 60 + i * 20) << text(label);
     }
 
-    // Debug hitbox kirajzolás
-    gout << color(255, 0, 255);  // Lila szín, jól látható
+    // Debug hitbox kirajzolÃ¡s
+    gout << color(255, 0, 255);  // Lila szÃ­n, jÃ³l lÃ¡thatÃ³
     for (int i = 0; i < 2; ++i) {
         Player* p = game->get_player(i);
         Vec2 pos = p->get_position();
@@ -146,7 +146,7 @@ void Display::draw() {
 }
 
 void Display::handle(event ev) {
-    // START MENÜ
+    // START MENÃœ
     if (game_state == State::StartMenu) {
         if (ev.type == ev_key && ev.keycode == ' ') {
             game_state = State::Playing;
@@ -216,6 +216,6 @@ void Display::handle(event ev) {
         game_state = State::Victory;
     }
 
-    // Frissítsd az elõzõ állapotot
+    // FrissÃ­tsd az elÃµzÃµ Ã¡llapotot
     projectile_was_active = game->projectile_active();
 }

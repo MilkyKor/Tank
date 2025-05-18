@@ -4,13 +4,13 @@
 Player::Player(Vec2 pos, int start_angle)
     : position(pos), angle(start_angle), power(20) {}
 
-void Player::move_left()  { position.x -= 5; }
-void Player::move_right() { position.x += 5; }
+void Player::move_left()  { position.x -= 2; }
+void Player::move_right() { position.x += 2; }
 
-void Player::increase_angle()  { if (angle < 180) angle += 5; }
-void Player::decrease_angle()  { if (angle > 0)   angle -= 5; }
+void Player::increase_angle()  { if (angle < 180) angle += 2; }
+void Player::decrease_angle()  { if (angle > 0)   angle -= 2; }
 
-void Player::increase_power()  { if (power < 50) power += 1; }
+void Player::increase_power()  { if (power < 30) power += 1; }
 void Player::decrease_power()  { if (power > 5)  power -= 1; }
 
 Vec2 Player::get_position() const { return position; }
