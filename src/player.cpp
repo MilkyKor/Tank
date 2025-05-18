@@ -23,10 +23,10 @@ Vec2 Player::get_barrel_exit() const {
     float dy = -std::sin(rad);
     float nx = -dy;
     float ny = dx;
-    float len = 30;
+    float len = 40;
     float width = 6;
     float base_x = position.x + 25;
-    float base_y = position.y - 12;
+    float base_y = position.y + 12;
 
     float x3 = base_x - nx * (width / 2) + dx * len;
     float y3 = base_y - ny * (width / 2) + dy * len;

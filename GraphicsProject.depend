@@ -28,7 +28,7 @@
 	"widgets.hpp"
 	"functional"
 
-1747565889 source:c:\users\toldi\desktop\prog\project\tank\src\game.cpp
+1747584838 source:c:\users\toldi\desktop\prog\project\tank\src\game.cpp
 	"game.hpp"
 	<cmath>
 
@@ -49,10 +49,11 @@
 	"graphics.hpp"
 	"app.hpp"
 
-1747567123 source:c:\users\toldi\desktop\prog\project\tank\src\display.cpp
+1747584994 source:c:\users\toldi\desktop\prog\project\tank\src\display.cpp
 	"display.hpp"
 	"graphics.hpp"
 	"player.hpp"
+	"iostream"
 	<cmath>
 
 1747516372 c:\users\toldi\desktop\prog\project\tank\include\display.hpp
@@ -67,7 +68,7 @@
 
 1747565698 c:\users\toldi\desktop\prog\project\tank\include\player.hpp
 
-1747566492 source:c:\users\toldi\desktop\prog\project\tank\src\player.cpp
+1747584400 source:c:\users\toldi\desktop\prog\project\tank\src\player.cpp
 	"player.hpp"
 	<cmath>
 

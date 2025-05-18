@@ -1,6 +1,7 @@
 #include "display.hpp"
 #include "graphics.hpp"
 #include "player.hpp"
+#include "iostream"
 #include <cmath>
 
 using namespace genv;
@@ -30,7 +31,7 @@ void Display::draw() {
              << move_to(10, 80)
              << text("Wind: ") << text(std::to_string(int(game->get_wind())));
 
-    // F�ld
+    // Föld
     gout << color(50, 100, 50) << move_to(0, _y + _size_y - 20) << box(_size_x, 20);
 
     // Tank
@@ -64,7 +65,7 @@ void Display::draw() {
          << line_to(x3, y3) << line_to(x4, y4)
          << line_to(x1, y1);
     }
-    // L�ved�k
+    // Lövedék
     if (game->projectile_active()) {
     Vec2 proj = game->get_projectile_pos();
     gout << color(255, 0, 0)
@@ -74,12 +75,12 @@ void Display::draw() {
 
 
 
-    // ir�ny
+    // irány
     std::vector<Vec2> preview = game->get_trajectory_preview();
 
     for (const Vec2& p : preview) {
         gout << color(255, 255, 255)
-         << move_to(p.x, p.y+50) << box(3, 3);
+         << move_to(p.x, p.y) << box(3, 3);
     }
 
     //hp
@@ -87,6 +88,14 @@ void Display::draw() {
     Player* p = game->get_player(i);
     std::string label = "P" + std::to_string(i+1) + " HP: " + std::to_string(p->get_hp());
     gout << color(0, 0, 0) << move_to(100, 60 + i * 20) << text(label);
+    }
+
+    // Debug hitbox kirajzolás
+    gout << color(255, 0, 255);  // Lila szín, jól látható
+    for (int i = 0; i < 2; ++i) {
+        Player* p = game->get_player(i);
+        Vec2 pos = p->get_position();
+        gout << move_to(pos.x, pos.y ) << box(50, 25);
     }
 }
 
@@ -115,8 +124,17 @@ void Display::handle(event ev) {
                 break;
             case ' ':
                 game->shoot();
-                game->next_turn();
+                break;
+            case 'm':
+                player->take_damage(50);
                 break;
         }
+
     }
+    if (projectile_was_active && !game->projectile_active()) {
+        game->next_turn();
+    }
+
+    // Frissítsd az előző állapotot
+    projectile_was_active = game->projectile_active();
 }
