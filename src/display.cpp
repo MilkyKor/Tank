@@ -1,88 +1,121 @@
 #include "display.hpp"
 #include "graphics.hpp"
+#include "player.hpp"
 #include <cmath>
 
 using namespace genv;
 
-Display::Display(App* parent, int x, int y, int sx, int sy, GameMaster* g)
+Display::Display(App* parent, int x, int y, int sx, int sy, Game* g)
     : Widget(parent, x, y, sx, sy), game(g) {}
 
 void Display::draw() {
     gout << move_to(_x, _y) << color(150, 200, 150) << box(_size_x, _size_y);
 
+    Player* current = game->get_current_player();
+
+    gout << color(0, 0, 0)
+     << move_to(10, 20)
+     << text("Current: Player ")
+     << text(std::to_string(1 + game->get_current_index()));
+
+    gout << move_to(10, 40)
+         << text("Angle: ") << text(std::to_string(current->get_angle()));
+
+    gout << move_to(10, 60)
+         << text("Power: ") << text(std::to_string(current->get_power()));
+
+    // wind
+
+        gout << color(0, 0, 0)
+             << move_to(10, 80)
+             << text("Wind: ") << text(std::to_string(int(game->get_wind())));
+
     // Föld
     gout << color(50, 100, 50) << move_to(0, _y + _size_y - 20) << box(_size_x, 20);
 
     // Tank
-    gout << color(100, 100, 100);
-    Vec2 base = {100, _y + _size_y - 20};
-    gout << move_to(base.x, base.y - 20) << box(40, 20);
+    for (int i = 0; i < 2; ++i) {
+    Player* p = (i == 0) ? game->get_current_player() : game->get_other_player();
+    Vec2 pos = p->get_position();
 
-    // Csõ mint téglalap
-     float angle = game->get_angle() * 3.14159f / 180.0f;
-     float length = 30.0f;
-     float width = 6.0f;
+    // Tank body
+    gout << color(100, 100, 100)
+         << move_to(pos.x, pos.y)
+         << box(50, 25);
 
-    // Tank pozíciója
-     float base_x = base.x + 20;  // közép
-     float base_y = base.y - 10;  // felsõ szél
+    // Barrel
+    float rad = p->get_angle() * 3.14159f / 180.0f;
+    float len = 40, wid = 8;
+    float dx = std::cos(rad), dy = -std::sin(rad);
+    float nx = -dy, ny = dx;
+    float bx = pos.x + 25, by = pos.y + 12;
 
-    // Tégla csõ 4 sarka - körbeforgatva
-     float dx = std::cos(angle);
-     float dy = -std::sin(angle);  // negatív mert lefelé nõ a Y
+    float x1 = bx + nx * (wid / 2);
+    float y1 = by + ny * (wid / 2);
+    float x2 = bx - nx * (wid / 2);
+    float y2 = by - ny * (wid / 2);
+    float x3 = x2 + dx * len;
+    float y3 = y2 + dy * len;
+    float x4 = x1 + dx * len;
+    float y4 = y1 + dy * len;
 
-    // keresztirány a vastagsághoz
-     float nx = -dy;
-     float ny = dx;
-
-    // 4 sarok
-     float x1 = base_x + nx * (width / 2);
-     float y1 = base_y + ny * (width / 2);
-
-     float x2 = base_x - nx * (width / 2);
-     float y2 = base_y - ny * (width / 2);
-
-     float x3 = x2 + dx * length;
-     float y3 = y2 + dy * length;
-
-     float x4 = x1 + dx * length;
-     float y4 = y1 + dy * length;
-
-    // Rajzoljunk csövet
-     gout << color(50, 50, 50);
-     gout << move_to(x1, y1) << line_to(x2, y2)
-     << line_to(x3, y3) << line_to(x4, y4)
-     << line_to(x1, y1);
-
+    gout << color(50, 50, 50)
+         << move_to(x1, y1) << line_to(x2, y2)
+         << line_to(x3, y3) << line_to(x4, y4)
+         << line_to(x1, y1);
+    }
     // Lövedék
     if (game->projectile_active()) {
-        Vec2 pos = game->get_projectile_pos();
-        gout << color(255, 0, 0) << move_to(pos.x, pos.y) << box(6, 6);
+    Vec2 proj = game->get_projectile_pos();
+    gout << color(255, 0, 0)
+         << move_to(proj.x, proj.y)
+         << box(4, 4);
     }
 
-    // Debug info
-    gout << move_to(500, 20) << color(0,0,0)
-         << text("Szog: " + std::to_string(game->get_angle()) +
-                 " Power: " + std::to_string(game->get_power()));
+
+
+    // irány
+    std::vector<Vec2> preview = game->get_trajectory_preview();
+
+    for (const Vec2& p : preview) {
+        gout << color(255, 255, 255)
+         << move_to(p.x, p.y+50) << box(3, 3);
+    }
+
+    //hp
+    for (int i = 0; i < 2; ++i) {
+    Player* p = game->get_player(i);
+    std::string label = "P" + std::to_string(i+1) + " HP: " + std::to_string(p->get_hp());
+    gout << color(0, 0, 0) << move_to(100, 60 + i * 20) << text(label);
+    }
 }
 
 void Display::handle(event ev) {
-    if (ev.type == ev_key) {
+    if (ev.type == ev_key && !game->projectile_active()) {
+        Player* player = game->get_current_player();
+
         switch (ev.keycode) {
             case key_right:
-                game->increase_angle();
+                player->decrease_angle();
                 break;
             case key_left:
-                game->decrease_angle();
+                player->increase_angle();
                 break;
             case key_up:
-                game->increase_power();
+                player->increase_power();
                 break;
             case key_down:
-                game->decrease_power();
+                player->decrease_power();
+                break;
+            case 'a':
+                player->move_left();
+                break;
+            case 'd':
+                player->move_right();
                 break;
             case ' ':
                 game->shoot();
+                game->next_turn();
                 break;
         }
     }

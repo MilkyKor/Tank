@@ -1,38 +1,32 @@
 #ifndef GAME_HPP
 #define GAME_HPP
+#include <vector>
 
-struct Vec2 {
-    float x, y;
-};
+#include "player.hpp"
 
-class GameMaster {
+class Game {
 public:
-    GameMaster();
+    Game();
 
-    void shoot();                  // aktuális angle + power alapján
-    Vec2 get_projectile_pos();
-    Vec2 get_barrel_exit();         // lövedék pontos kiindulása
+    void shoot();
+    void next_turn();
+    Player* get_current_player();
+    Player* get_other_player();
     bool projectile_active();
-
-    void increase_angle();         // angle += 5
-    void decrease_angle();         // angle -= 5
-    void increase_power();         // power += 1
-    void decrease_power();         // power -= 1
-
-    int get_angle() const;
-    int get_power() const;
-    Vec2 get_barrel_end();         // csõ végének pozíciója
+    Vec2 get_projectile_pos();
+    std::vector<Vec2> get_trajectory_preview();
+    int get_current_index() const;
+    float get_wind() const { return wind; }
+    Player* get_player(int i);
 
 private:
+    Player players[2];
+    int current;
     Vec2 projectile_pos;
     Vec2 velocity;
     bool active;
     float gravity;
     float wind;
-
-    int angle;  // fokban
-    int power;
-    Vec2 tank_pos;
 };
 
 #endif

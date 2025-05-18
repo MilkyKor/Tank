@@ -8,12 +8,12 @@ using namespace genv;
 class TankApp : public App {
 public:
     TankApp(int w, int h) : App(w,h) {
-        game = new GameMaster();
+        game = new Game();
         display = new Display(this, 0, 0, w, h, game);
     }
 
 private:
-    GameMaster* game;
+    Game* game;
     Display* display;
 };
 

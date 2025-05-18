@@ -1,82 +1,83 @@
 #include "game.hpp"
 #include <cmath>
 
-GameMaster::GameMaster()
-    : active(false), gravity(0.4f), wind(0.0f), angle(45), power(20), tank_pos({100, 530}) {}
+Game::Game()
+    : players{ Player({100, 555}, 45), Player({650, 555}, 135) },current(0), active(false), gravity(0.4), wind(0)
+{
 
-void GameMaster::shoot() {
-    float rad = angle * 3.14159f / 180.0f;
-    velocity = { power * std::cos(rad), -power * std::sin(rad) };
-    projectile_pos = get_barrel_exit();
+}
+
+Player* Game::get_current_player() {
+    return &players[current];
+}
+
+Player* Game::get_other_player() {
+    return &players[1 - current];
+}
+
+void Game::shoot() {
+    Player* p = get_current_player();
+    float rad = p->get_angle() * 3.14 / 180;
+    velocity = { p->get_power() * std::cos(rad), -p->get_power() * std::sin(rad) };
+    projectile_pos = p->get_barrel_exit();
     active = true;
 }
 
-Vec2 GameMaster::get_projectile_pos() {
+Vec2 Game::get_projectile_pos() {
     if (!active) return {-1, -1};
     projectile_pos.x += velocity.x + wind;
     projectile_pos.y += velocity.y;
     velocity.y += gravity;
+    if (projectile_pos.y > 580)
+        active = false;
 
-    if (projectile_pos.y > 580) {
+    Vec2 opp_pos = get_other_player()->get_position();
+    if (std::abs(projectile_pos.x - opp_pos.x) < 20 &&
+        std::abs(projectile_pos.y - opp_pos.y) < 20)
+    {
+        get_other_player()->take_damage(20);
         active = false;
     }
+
     return projectile_pos;
 }
 
-bool GameMaster::projectile_active() {
+
+std::vector<Vec2> Game::get_trajectory_preview() {
+    std::vector<Vec2> preview;
+    if (!projectile_active()) {
+        Vec2 pos = get_current_player()->get_barrel_exit();
+        float angle = get_current_player()->get_angle() * 3.14 / 180;
+        float power = get_current_player()->get_power();
+        Vec2 vel = { power * std::cos(angle), -power * std::sin(angle) };
+        Vec2 current = pos;
+        current.y -= 30;
+        for (int i = 0; i < 10; ++i) {
+            current.x += vel.x + wind;
+            current.y += vel.y;
+            vel.y += gravity;
+            if (current.y > 580) break;
+            preview.push_back(current);
+        }
+    }
+    return preview;
+}
+
+
+bool Game::projectile_active() {
     return active;
 }
 
-void GameMaster::increase_angle() {
-    if (angle < 90) angle += 5;
+void Game::next_turn() {
+    current = 1 - current;
+    wind = (rand() % 21 - 10) / 2;
 }
 
-void GameMaster::decrease_angle() {
-    if (angle > 0) angle -= 5;
+int Game::get_current_index() const {
+    return current;
 }
-
-void GameMaster::increase_power() {
-    if (power < 50) power += 1;
-}
-
-void GameMaster::decrease_power() {
-    if (power > 5) power -= 1;
-}
-
-int GameMaster::get_angle() const {
-    return angle;
-}
-
-int GameMaster::get_power() const {
-    return power;
-}
-
-
-Vec2 GameMaster::get_barrel_exit()
+Player* Game::get_player(int i)
 {
-    float rad = angle * 3.14159f / 180.0f;
-    float length = 30.0f;
-    float width = 6.0f;
-
-    float dx = std::cos(rad);
-    float dy = -std::sin(rad);
-
-    float nx = -dy;
-    float ny = dx;
-
-    float base_x = tank_pos.x + 20;
-    float base_y = tank_pos.y -10;
-
-    // végsõ két sarok a csõ végén
-    float x3 = base_x - nx * (width / 2) + dx * length;
-    float y3 = base_y - ny * (width / 2) + dy * length;
-
-    float x4 = base_x + nx * (width / 2) + dx * length;
-    float y4 = base_y + ny * (width / 2) + dy * length;
-
-    // középpont a csõ végén
-    return {
-        (x3 + x4) / 2,
-        (y3 + y4) / 2
-    };
+    return &players[i];
 }
+
