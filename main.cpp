@@ -2,7 +2,6 @@
 #include "app.hpp"
 #include "game.hpp"
 #include "display.hpp"
-#include "menu.hpp"
 
 using namespace genv;
 

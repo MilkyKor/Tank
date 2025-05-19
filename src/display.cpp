@@ -1,3 +1,4 @@
+
 #include "display.hpp"
 #include "graphics.hpp"
 #include "player.hpp"
@@ -7,7 +8,8 @@
 using namespace genv;
 
 Display::Display(App* parent, int x, int y, int sx, int sy, Game* g)
-    : Widget(parent, x, y, sx, sy), game(g) {}
+    : Widget(parent, x, y, sx, sy), game(g){}
+
 
 void Display::draw() {
 
@@ -126,14 +128,6 @@ void Display::draw() {
     Player* p = game->get_player(i);
     std::string label = "P" + std::to_string(i+1) + " HP: " + std::to_string(p->get_hp());
     gout << color(0, 0, 0) << move_to(100, 60 + i * 20) << text(label);
-    }
-
-    // Debug hitbox kirajzolás
-    gout << color(255, 0, 255);  // Lila szín, jól látható
-    for (int i = 0; i < 2; ++i) {
-        Player* p = game->get_player(i);
-        Vec2 pos = p->get_position();
-        gout << move_to(pos.x, pos.y ) << box(50, 25);
     }
     std::string type_str;
     switch (game->get_projectile_type()) {
